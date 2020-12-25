@@ -5,22 +5,25 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
+    name: Deploy Application
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x]
     steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Checkout Repo
+        uses: actions/checkout@master
+      - name: Create Node Environment
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install Packages
-        run: npm install
-      - name: Deploy to GH Pages
+          node-version: 10.x
+      - name: Install Packages and Build Application
         run: |
-          git config --global user.email "prasadrajankalwar@gmail.com"
-          git config --global user.name "rajandmr"
-          git remote set-url origin https://${{secrets.MY_GITHUB_TOKEN}}@github.com/rajandmr/Reading-List-Vuex.git
-          npm run deploy
+          npm install -g @vue/cli yarn
+          yarn install
+          yarn build
+      - name: Deploy
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: master
+          FOLDER: dist
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
